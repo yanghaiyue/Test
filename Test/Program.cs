@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Serialization;
@@ -16,42 +17,53 @@ namespace Test
 
         static void Main(string[] args)
         {
-            Console.WriteLine($"Version: {Environment.Version}");
-            //UrlMatchRuleInfoListEntity urlMatchRuleInfoList = null;
+            string s = "r";
+            // 将s转换为UTF8编码的字节数组
+            byte[] b = Encoding.UTF8.GetBytes(s);
+            MD5 md5 = MD5.Create();
+            byte[] md5Encrypt = md5.ComputeHash(b);
 
-            //string fileName = string.Format(@"{0}\RuleXml\ruleInfo.xml", Environment.CurrentDirectory);
-            //urlMatchRuleInfoList = XmlDataLoad(typeof(UrlMatchRuleInfoListEntity), fileName) as UrlMatchRuleInfoListEntity;
-            //string url = "http://www.baicyun.com.cn:9700/baicmotorzt/mobilemaininfo.ashx/areadayspfcount?userCode=bmservice&clientType=IOS&ver=0&uid=a979272fdf96436f9c3a025591b954c6&dataType=yg&startDate=2018-01-26&endDate=";
-            //Console.WriteLine(url.Length);
-
-
-            //Regex regex;
-            //foreach (UrlMatchRuleInfo item in urlMatchRuleInfoList.UrlMatchRuleInfoList)
-            //{
-            //    regex = new Regex(item.MatchRule);
-            //    MatchCollection matches = regex.Matches(url);
-            //    bool isMatch = regex.IsMatch(url);
-            //}
-            //UrlMatchRuleInfoListEntity.Point point = new UrlMatchRuleInfoListEntity.Point();
-            //point.x = 123;
-            //point.y = 456;
-            //Peoson P = new Peoson();
-            //P.name = "yhy";
-            //int size = Marshal.SizeOf(point);
-            //IntPtr pnt = Marshal.AllocHGlobal(size);
-            //Marshal.StructureToPtr(point, pnt, false);
-            //byte[] byteBuffer = new byte[size];
-            //Marshal.Copy(byteBuffer, 0, pnt, size);
-            //Marshal.Copy(pnt, byteBuffer, 0, size);
-            //string result = Encoding.UTF8.GetString(byteBuffer);
-            //object t = GetInstance<Point>();
-            //object obj = Activator.CreateInstanceFrom(AppDomain.CurrentDomain, string.Empty, "Point");
-            //Type type = typeof(UrlMatchRuleInfoListEntity.Point);
-            //object instance = GetInstance("Test.UrlMatchRuleInfoListEntity+Point", pnt);
-            //Dictionary<string, object> result = GetBaseData(instance);
-
+            // 用十六进制格式输出这个字节数组
+            for (int i = 0; i < b.Length; i++)
+            {
+                Console.Write("{0:x2} ", b[i]);
+            }
+            Console.WriteLine();
             Console.ReadKey();
 
+        }
+
+        /// <summary>
+        /// 对象转xml
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public static string ObjectToXml(Type type, object obj)
+        {
+            string result = string.Empty;
+
+            using (MemoryStream stream = new MemoryStream())
+            {
+                XmlSerializer xml = new XmlSerializer(type);
+                try
+                {
+                    xml.Serialize(stream, obj);
+                    //Encoding.UTF8.GetString(stream.ToArray());
+                    stream.Position = 0;
+                    using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
+                    {
+                        result = reader.ReadToEnd();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    //LogHelper log = new LogHelper(logTye: LogHelper.LogType.Error.ToString());
+                    //log.AddErrorLog(string.Format("{0}.{1}", typeof(ToolHelper).FullName, MethodBase.GetCurrentMethod().Name), ex);
+                }
+            }
+
+            return result;
         }
 
         public static object GetInstance(string typeName, IntPtr ptr)
