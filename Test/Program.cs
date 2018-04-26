@@ -17,7 +17,7 @@ namespace Test
 
         static void Main(string[] args)
         {
-            string s = "r";
+            string s = "123";
             // 将s转换为UTF8编码的字节数组
             byte[] b = Encoding.UTF8.GetBytes(s);
             MD5 md5 = MD5.Create();
